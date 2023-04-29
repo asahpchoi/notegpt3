@@ -11,10 +11,13 @@ export default function App() {
   //const apiKey = "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";
 
   const [recording, setRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [src, setSrc] = useState();
   const [text, setText] = useState();
   const [summary, setSummary] = useState();
   async function uploadToWhisper(blob) {
+    setLoading(true);
     const url = `https://4q8slb-3000.csb.app/upload`;
 
     const data = new FormData();
@@ -27,12 +30,12 @@ export default function App() {
 
     const resp = await axios.post(url, data, {
       headers: {
-        "Content-Type": "multipart/form-data"
-      }
+        "Content-Type": "multipart/form-data",
+      },
     });
     setText(resp.data.result);
     setSummary(resp.data.summary);
-
+    setLoading(false);
     console.log({ result: resp.data });
   }
 
@@ -50,26 +53,39 @@ export default function App() {
 
   return (
     <Stack>
-      <Button>Config</Button>
-      <audio controls={true} src={src}></audio>
-      <a href={src}>Download audio </a>
+      {!loading && (
+        <Button
+          onClick={() => {
+            setRecording(!recording);
+          }}
+        >
+          {recording ? "Stop" : "Start"}
+        </Button>
+      )}
+      {loading ? "Loading" : ""}
       <ReactMic
         record={recording}
         onStop={onStop}
         onData={onData}
         mimeType="audio/mp3"
       />
-      <Button
-        onClick={() => {
-          setRecording(!recording);
-        }}
-      >
-        {recording ? "Stop" : "Start"}
-      </Button>
-      <h2>Transcript</h2>
-      {text}
-      <h2>Summary</h2>
-      {summary.content}
+      {!loading && (
+        <>
+          <h2>Transcript</h2>
+          {text}
+          <h2>Summary</h2>
+          {summary && summary.content}
+        </>
+      )}
     </Stack>
+  );
+}
+
+function audioUI() {
+  return (
+    <>
+      <audio controls={true} src={src}></audio>
+      <a href={src}>Download audio </a>
+    </>
   );
 }
