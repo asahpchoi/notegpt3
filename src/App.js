@@ -6,6 +6,7 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactMic } from "react-mic";
+import TextField from "@mui/material/TextField";
 
 export default function App() {
   //const apiKey = "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";
@@ -16,6 +17,24 @@ export default function App() {
   const [src, setSrc] = useState();
   const [transcript, setTranscript] = useState();
   const [summary, setSummary] = useState();
+
+  async function getSummary(transcript) {
+    const result = await axios.post(
+      `https://4q8slb-3000.csb.app/getSummary`,
+      {
+        transcript,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    //setSummary(result.data.summary);
+    // /console.log();
+    setSummary(result.data.summary.content);
+  }
+
   async function uploadToWhisper(blob) {
     setLoading(true);
     const url = `https://4q8slb-3000.csb.app/upload`;
@@ -34,7 +53,7 @@ export default function App() {
       },
     });
     setTranscript(resp.data.result);
-    setSummary(resp.data.summary);
+    //setSummary(resp.data.summary);
     setLoading(false);
     console.log({ result: resp.data });
   }
@@ -69,10 +88,47 @@ export default function App() {
         onData={onData}
         mimeType="audio/mp3"
       />
-      {!loading && transcript && <>transcript: {transcript}</>}
-      {!loading && summary && <>summary: {summary}</>}
+      {!loading && transcript && <>{showTranscript(transcript)}</>}
+      {!loading && summary && <>{showSummary(summary)}</>}
     </Stack>
   );
+  function showTranscript(transcript) {
+    return (
+      <>
+        <TextField
+          id="filled-multiline-flexible"
+          label="transcript"
+          multiline
+          maxRows={4}
+          variant="filled"
+          value={transcript}
+          onChange={(event) => {
+            console.log(event.target.value);
+            setTranscript(event.target.value);
+          }}
+        />
+        <Button
+          onClick={() => {
+            getSummary(transcript);
+          }}
+        >
+          Get Summary
+        </Button>
+      </>
+    );
+  }
+  function showSummary(summary) {
+    return (
+      <TextField
+        id="filled-multiline-flexible"
+        label="Summary"
+        multiline
+        maxRows={4}
+        variant="filled"
+        value={summary}
+      />
+    );
+  }
 }
 
 function audioUI() {
