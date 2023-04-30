@@ -14,7 +14,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const [src, setSrc] = useState();
-  const [text, setText] = useState();
+  const [transcript, setTranscript] = useState();
   const [summary, setSummary] = useState();
   async function uploadToWhisper(blob) {
     setLoading(true);
@@ -33,7 +33,7 @@ export default function App() {
         "Content-Type": "multipart/form-data",
       },
     });
-    setText(resp.data.result);
+    setTranscript(resp.data.result);
     setSummary(resp.data.summary);
     setLoading(false);
     console.log({ result: resp.data });
@@ -69,14 +69,8 @@ export default function App() {
         onData={onData}
         mimeType="audio/mp3"
       />
-      {!loading && (
-        <>
-          <h2>Transcript</h2>
-          {text}
-          <h2>Summary</h2>
-          {summary && summary.content}
-        </>
-      )}
+      {!loading && transcript && <>transcript: {transcript}</>}
+      {!loading && summary && <>summary: {summary}</>}
     </Stack>
   );
 }
