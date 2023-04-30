@@ -19,6 +19,7 @@ export default function App() {
   const [summary, setSummary] = useState();
 
   async function getSummary(transcript) {
+    setLoading(true);
     const result = await axios.post(
       `https://4q8slb-3000.csb.app/getSummary`,
       {
@@ -32,6 +33,7 @@ export default function App() {
     );
     //setSummary(result.data.summary);
     // /console.log();
+    setLoading(false);
     setSummary(result.data.summary.content);
   }
 
@@ -119,14 +121,23 @@ export default function App() {
   }
   function showSummary(summary) {
     return (
-      <TextField
-        id="filled-multiline-flexible"
-        label="Summary"
-        multiline
-        maxRows={4}
-        variant="filled"
-        value={summary}
-      />
+      <>
+        <TextField
+          id="filled-multiline-flexible"
+          label="Summary"
+          multiline
+          maxRows={4}
+          variant="filled"
+          value={summary}
+        />
+        <Button
+          onClick={() => {
+            navigator.share({ title: "Happy Share", text: summary });
+          }}
+        >
+          Send Email
+        </Button>
+      </>
     );
   }
 }
