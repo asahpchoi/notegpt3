@@ -28,61 +28,18 @@ export default function App() {
   const [summary, setSummary] = useState();
   const [age, setAge] = useState(10);
 
-  const [actas, setActas] = useState("assistant");
+  const [actas, setActas] = useState("act as an assistant to take note");
+  const [actasList, setActasList] = useState([]);
   const [goal, setGoal] = useState("assistant");
   const [restriction, setRestriction] = useState("assistant");
   const [answer, setAnswer] = useState("assistant");
 
-  const userMessage = `Write a Title for the transcript that is under 15 words.
-
-Then write: "--Summary--"
-
-Write "Summary" as a Heading 1.
-
-Write a summary of the provided transcript.
-
-Then write: "--Additional Info--".
-
-Then return a list of the main points in the provided transcript. Then return a list of action items. Then return a list of follow up questions. Then return a list of potential arguments against the transcript.
-
-For each list, return a Heading 2 before writing the list items. Limit each list item to 100 words, and return no more than 5 points per list.
-
-Transcript:
-
-`;
-
-  const systemMessage = `You are a assisstant that only speaks in Markdown.  
-
-Example formatting:
-
-Testing No-Code Workflow
-
---Summary--
-
-This audio recording documents a test of a no-code workflow using Google Drive and a single code step to reduce calls and improve efficiency.
-
---Additional Info--
-
-## Main points in the conversation
-
-- point 1
-- point 2
-
-## Problems and Solutions
-
-- point 1
-- point 2
-
-## Action Plan
-
-- point 1
-- point 2
-
-## Evaluation of the converstation
-
-- point 1
-- point 2
-  `;
+  useEffect(async () => {
+    const msglist = await axios.get(
+      "https://4q8slb-3000.csb.app/getMessageList"
+    );
+    setActasList(msglist.data);
+  }, []);
 
   const [lookup, setLookup] = useState({
     roles: [
@@ -106,12 +63,13 @@ This audio recording documents a test of a no-code workflow using Google Drive a
     ],
   });
 
-  async function getSummary(transcript) {
+  async function getSummary(transcript, actas) {
     setLoading(true);
     const result = await axios.post(
       `https://4q8slb-3000.csb.app/getSummary`,
       {
         transcript,
+        actas,
       },
       {
         headers: {
@@ -228,23 +186,28 @@ This audio recording documents a test of a no-code workflow using Google Drive a
             setTranscript(event.target.value);
           }}
         />
-        {false && (
-          <>
-            {showOptions("Act as", actas, setActas, lookup["roles"])}
-            {showOptions("Goals ", goal, setGoal, lookup["goals"])}
-            {showOptions(
-              "use Tone of",
-              restriction,
-              setRestriction,
-              lookup["restrictions"]
-            )}
-            {showOptions("Answers as ", answer, setAnswer, lookup["answers"])}
-          </>
-        )}
+        <Box className="input">
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Act as</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={actas}
+              label="Act as"
+              onChange={(event) => {
+                setActas(event.target.value);
+              }}
+            >
+              {actasList.map((l) => {
+                return <MenuItem value={l}>{l}</MenuItem>;
+              })}
+            </Select>
+          </FormControl>
+        </Box>
         <Button
           variant="outlined"
           onClick={() => {
-            getSummary(transcript);
+            getSummary(transcript, actas);
           }}
         >
           <SummarizeIcon />
