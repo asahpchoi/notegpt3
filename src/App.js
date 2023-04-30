@@ -7,16 +7,104 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import { ReactMic } from "react-mic";
 import TextField from "@mui/material/TextField";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import MicIcon from "@mui/icons-material/Mic";
+import SummarizeIcon from "@mui/icons-material/Summarize";
+import ShareIcon from "@mui/icons-material/Share";
 
 export default function App() {
   //const apiKey = "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";
 
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [src, setSrc] = useState();
-  const [transcript, setTranscript] = useState();
+  const [transcript, setTranscript] = useState("Speak or Type here");
   const [summary, setSummary] = useState();
+  const [age, setAge] = useState(10);
+
+  const [actas, setActas] = useState("assistant");
+  const [goal, setGoal] = useState("assistant");
+  const [restriction, setRestriction] = useState("assistant");
+  const [answer, setAnswer] = useState("assistant");
+
+  const userMessage = `Write a Title for the transcript that is under 15 words.
+
+Then write: "--Summary--"
+
+Write "Summary" as a Heading 1.
+
+Write a summary of the provided transcript.
+
+Then write: "--Additional Info--".
+
+Then return a list of the main points in the provided transcript. Then return a list of action items. Then return a list of follow up questions. Then return a list of potential arguments against the transcript.
+
+For each list, return a Heading 2 before writing the list items. Limit each list item to 100 words, and return no more than 5 points per list.
+
+Transcript:
+
+`;
+
+  const systemMessage = `You are a assisstant that only speaks in Markdown.  
+
+Example formatting:
+
+Testing No-Code Workflow
+
+--Summary--
+
+This audio recording documents a test of a no-code workflow using Google Drive and a single code step to reduce calls and improve efficiency.
+
+--Additional Info--
+
+## Main points in the conversation
+
+- point 1
+- point 2
+
+## Problems and Solutions
+
+- point 1
+- point 2
+
+## Action Plan
+
+- point 1
+- point 2
+
+## Evaluation of the converstation
+
+- point 1
+- point 2
+  `;
+
+  const [lookup, setLookup] = useState({
+    roles: [
+      "journalist",
+      "assisstant",
+      "expert copy writer",
+      "full stack developer",
+    ],
+    goals: [
+      "write an eassay",
+      "code a web page",
+      "analysis the follow text",
+      "explain to a 3 years old children",
+      "summarize this text",
+    ],
+    restrictions: ["adopt a formal tone", "write using basic English"],
+    answers: [
+      "answer with a number list",
+      "answer with code",
+      "answer with bullet points",
+    ],
+  });
 
   async function getSummary(transcript) {
     setLoading(true);
@@ -74,32 +162,63 @@ export default function App() {
 
   return (
     <Stack>
-      {!loading && (
-        <Button
-          onClick={() => {
-            setRecording(!recording);
-          }}
-        >
-          {recording ? "Stop" : "Start"}
-        </Button>
-      )}
-      {loading ? "Loading" : ""}
       <ReactMic
         record={recording}
         onStop={onStop}
         onData={onData}
         mimeType="audio/mp3"
       />
+      {!loading && (
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setRecording(!recording);
+          }}
+        >
+          <MicIcon />
+          {recording ? "Stop recording" : "Start Recording"}
+        </Button>
+      )}
+
       {!loading && transcript && <>{showTranscript(transcript)}</>}
       {!loading && summary && <>{showSummary(summary)}</>}
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Stack>
   );
+
+  function showOptions(label, value, setValue, lookup) {
+    return (
+      <Box className="input">
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">{label}</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={value}
+            label={label}
+            onChange={(event) => {
+              setValue(event.target.value);
+            }}
+          >
+            {lookup.map((l) => {
+              return <MenuItem value={l}>{l}</MenuItem>;
+            })}
+          </Select>
+        </FormControl>
+      </Box>
+    );
+  }
   function showTranscript(transcript) {
     return (
       <>
         <TextField
           id="filled-multiline-flexible"
-          label="transcript"
+          label="Transcript or URL"
           multiline
           maxRows={4}
           variant="filled"
@@ -109,11 +228,26 @@ export default function App() {
             setTranscript(event.target.value);
           }}
         />
+        {false && (
+          <>
+            {showOptions("Act as", actas, setActas, lookup["roles"])}
+            {showOptions("Goals ", goal, setGoal, lookup["goals"])}
+            {showOptions(
+              "use Tone of",
+              restriction,
+              setRestriction,
+              lookup["restrictions"]
+            )}
+            {showOptions("Answers as ", answer, setAnswer, lookup["answers"])}
+          </>
+        )}
         <Button
+          variant="outlined"
           onClick={() => {
             getSummary(transcript);
           }}
         >
+          <SummarizeIcon />
           Get Summary
         </Button>
       </>
@@ -131,11 +265,13 @@ export default function App() {
           value={summary}
         />
         <Button
+          variant="outlined"
           onClick={() => {
             navigator.share({ title: "Happy Share", text: summary });
           }}
         >
-          Send Email
+          <ShareIcon />
+          Share
         </Button>
       </>
     );
