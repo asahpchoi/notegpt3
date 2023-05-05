@@ -18,6 +18,8 @@ import MicIcon from "@mui/icons-material/Mic";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import ShareIcon from "@mui/icons-material/Share";
 
+import { ButtonGroup } from "@mui/material";
+
 export default function App() {
   //const apiKey = "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";
 
@@ -204,24 +206,26 @@ export default function App() {
             </Select>
           </FormControl>
         </Box>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            navigator.share({ title: "Happy Share", text: transcript });
-          }}
-        >
-          <ShareIcon />
-          Share
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            getSummary(transcript, actas);
-          }}
-        >
-          <SummarizeIcon />
-          Get Summary
-        </Button>
+        <ButtonGroup>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              navigator.share({ title: "Happy Share", text: transcript });
+            }}
+          >
+            <ShareIcon />
+            Share
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              getSummary(transcript, actas);
+            }}
+          >
+            <SummarizeIcon />
+            Get Summary
+          </Button>
+        </ButtonGroup>
       </>
     );
   }
