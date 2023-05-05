@@ -207,6 +207,15 @@ export default function App() {
         <Button
           variant="outlined"
           onClick={() => {
+            navigator.share({ title: "Happy Share", text: transcript });
+          }}
+        >
+          <ShareIcon />
+          Share
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
             getSummary(transcript, actas);
           }}
         >
