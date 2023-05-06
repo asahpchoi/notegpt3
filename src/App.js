@@ -17,56 +17,33 @@ import MenuItem from "@mui/material/MenuItem";
 import MicIcon from "@mui/icons-material/Mic";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import ShareIcon from "@mui/icons-material/Share";
+import Skeleton from "@mui/material/Skeleton";
+import Service from "./Service.js";
 
 import { ButtonGroup } from "@mui/material";
 
 export default function App() {
-  //const apiKey = "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";
-
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [src, setSrc] = useState();
   const [transcript, setTranscript] = useState("Speak or Type here");
   const [summary, setSummary] = useState();
-  const [age, setAge] = useState(10);
 
   const [actas, setActas] = useState("act as an assistant to take note");
   const [actasList, setActasList] = useState([]);
-  const [goal, setGoal] = useState("assistant");
-  const [restriction, setRestriction] = useState("assistant");
-  const [answer, setAnswer] = useState("assistant");
 
-  useEffect(async () => {
-    const msglist = await axios.get(
-      "https://4q8slb-3000.csb.app/getMessageList"
-    );
-    setActasList(msglist.data);
+  useEffect(() => {
+    const init = async () => {
+      const msglist = await axios.get(
+        "https://4q8slb-3000.csb.app/getMessageList"
+      );
+      setActasList(msglist.data);
+    };
+    init();
   }, []);
-
-  const [lookup, setLookup] = useState({
-    roles: [
-      "journalist",
-      "assisstant",
-      "expert copy writer",
-      "full stack developer",
-    ],
-    goals: [
-      "write an eassay",
-      "code a web page",
-      "analysis the follow text",
-      "explain to a 3 years old children",
-      "summarize this text",
-    ],
-    restrictions: ["adopt a formal tone", "write using basic English"],
-    answers: [
-      "answer with a number list",
-      "answer with code",
-      "answer with bullet points",
-    ],
-  });
+  const [lookup, setLookup] = useState({});
 
   async function getSummary(transcript, actas) {
-    setLoading(true);
     const result = await axios.post(
       `https://4q8slb-3000.csb.app/getSummary`,
       {
@@ -79,14 +56,10 @@ export default function App() {
         },
       }
     );
-    //setSummary(result.data.summary);
-    // /console.log();
-    setLoading(false);
     setSummary(result.data.summary.content);
   }
 
   async function uploadToWhisper(blob) {
-    setLoading(true);
     const url = `https://4q8slb-3000.csb.app/upload`;
 
     const data = new FormData();
@@ -95,60 +68,65 @@ export default function App() {
 
     data.append("file", file);
 
-    console.log({ data, blob, file });
-
     const resp = await axios.post(url, data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
     setTranscript(resp.data.result);
-    //setSummary(resp.data.summary);
-    setLoading(false);
-    console.log({ result: resp.data });
   }
 
   const onStop = async (blob) => {
     setSrc(blob.blobURL);
-    //console.log(await axios.get("https://39gt7y-3000.csb.app/"));
-    uploadToWhisper(blob);
+    setLoading(true);
+    await uploadToWhisper(blob);
+    setLoading(false);
   };
 
   const onData = (blob) => {};
 
-  useEffect(() => {
-    //openAICalls(apiKey, transcript.text);
-  }, []);
-
   return (
-    <Stack>
+    <>
       <ReactMic
+        visualSetting="frequencyBars"
         record={recording}
         onStop={onStop}
         onData={onData}
         mimeType="audio/mp3"
+        echoCancellation={false} // defaults -> false
+        autoGainControl={false} // defaults -> false
+        noiseSuppression={false} // defaults -> false
+        channelCount={1}
+        style={{ height: "10px" }}
       />
-      {!loading && (
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setRecording(!recording);
-          }}
+      <Stack className="box">
+        {!loading && (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setRecording(!recording);
+            }}
+          >
+            <MicIcon />
+            {recording ? "Stop recording" : "Start Recording"}
+          </Button>
+        )}
+        <div className="row content">
+          {!loading && transcript && <>{showTranscript(transcript)}</>}
+          {!loading && summary && <>{showSummary(summary)}</>}
+        </div>
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={loading}
         >
-          <MicIcon />
-          {recording ? "Stop recording" : "Start Recording"}
-        </Button>
-      )}
-
-      {!loading && transcript && <>{showTranscript(transcript)}</>}
-      {!loading && summary && <>{showSummary(summary)}</>}
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    </Stack>
+          <Box sx={{ width: 300 }}>
+            <Skeleton />
+            <Skeleton animation="wave" />
+            <Skeleton animation={false} />
+          </Box>
+        </Backdrop>
+      </Stack>
+    </>
   );
 
   function showOptions(label, value, setValue, lookup) {
@@ -165,8 +143,12 @@ export default function App() {
               setValue(event.target.value);
             }}
           >
-            {lookup.map((l) => {
-              return <MenuItem value={l}>{l}</MenuItem>;
+            {lookup.map((l, i) => {
+              return (
+                <MenuItem key={i} value={l}>
+                  {l}
+                </MenuItem>
+              );
             })}
           </Select>
         </FormControl>
@@ -180,9 +162,10 @@ export default function App() {
           id="filled-multiline-flexible"
           label="Transcript or URL"
           multiline
-          maxRows={4}
+          rows={4}
           variant="filled"
           value={transcript}
+          className="multiline"
           onChange={(event) => {
             console.log(event.target.value);
             setTranscript(event.target.value);
@@ -200,13 +183,28 @@ export default function App() {
                 setActas(event.target.value);
               }}
             >
-              {actasList.map((l) => {
-                return <MenuItem value={l}>{l}</MenuItem>;
+              {actasList.map((l, i) => {
+                return (
+                  <MenuItem key={i} value={l}>
+                    {l}
+                  </MenuItem>
+                );
               })}
             </Select>
           </FormControl>
         </Box>
         <ButtonGroup>
+          <Button
+            variant="outlined"
+            onClick={async () => {
+              setLoading(true);
+              await getSummary(transcript, actas);
+              setLoading(false);
+            }}
+          >
+            <SummarizeIcon />
+            Get Summary
+          </Button>
           <Button
             variant="outlined"
             onClick={() => {
@@ -215,15 +213,6 @@ export default function App() {
           >
             <ShareIcon />
             Share
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              getSummary(transcript, actas);
-            }}
-          >
-            <SummarizeIcon />
-            Get Summary
           </Button>
         </ButtonGroup>
       </>
@@ -236,9 +225,10 @@ export default function App() {
           id="filled-multiline-flexible"
           label="Summary"
           multiline
-          maxRows={4}
           variant="filled"
           value={summary}
+          className="multiline"
+          rows={4}
         />
         <Button
           variant="outlined"
