@@ -6,3 +6,7 @@
 .input {
   margin: 1em;
 }
+
+Button {
+  min-width: 50%;
+}
