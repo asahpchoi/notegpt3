@@ -4,12 +4,14 @@ import ShareIcon from "@mui/icons-material/Share";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import { ButtonGroup } from "@mui/material";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import MenuItem from "@mui/material/MenuItem";
 import Backdrop from "@mui/material/Backdrop";
 import Skeleton from "@mui/material/Skeleton";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
 
 const LoadingPage = ({ loading }) => {
   return (
@@ -50,7 +52,32 @@ const Summary = ({ summary }) => {
     </>
   );
 };
-
+const Header = () => {
+  return (
+    <AppBar position="static">
+      <Toolbar disableGutters>
+        <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+        <Typography
+          variant="h6"
+          noWrap
+          component="a"
+          href="/"
+          sx={{
+            mr: 2,
+            display: { xs: "none", md: "flex" },
+            fontFamily: "monospace",
+            fontWeight: 700,
+            letterSpacing: ".3rem",
+            color: "inherit",
+            textDecoration: "none",
+          }}
+        >
+          LOGO
+        </Typography>
+      </Toolbar>
+    </AppBar>
+  );
+};
 const Transcript = ({
   transcript,
   setTranscript,
@@ -76,14 +103,15 @@ const Transcript = ({
       />
       <Box className="input">
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Act as</InputLabel>
+          <InputLabel id="actaslabel">Act as</InputLabel>
           <Select
-            labelId="demo-simple-select-label"
+            labelId="actaslabel"
             value={actas}
             label="Act as"
             onChange={(event) => {
               setActas(event.target.value);
             }}
+            defaultValue=""
           >
             {actasList.map((l, i) => {
               return (
@@ -121,4 +149,4 @@ const Transcript = ({
   );
 };
 
-export { Summary, Transcript, LoadingPage };
+export { Summary, Transcript, LoadingPage, Header };
