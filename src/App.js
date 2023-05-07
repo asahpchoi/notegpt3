@@ -2,12 +2,12 @@ import "./styles.css";
 
 import { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
-import MicIcon from "@mui/icons-material/Mic";
+ 
+
 
 import { ReactMic } from "react-mic";
 import { uploadToWhisper, getSummary, init } from "./comps/API.js";
-import { Summary, Transcript, LoadingPage, Header } from "./comps/UI.js";
+import { Summary, Transcript, LoadingPage, Header, Recording } from "./comps/UI.js";
 
 export default function App({ analytics }) {
   const [recording, setRecording] = useState(false);
@@ -36,26 +36,10 @@ export default function App({ analytics }) {
   return (
     <>
       <Stack className="box">
-        <Header />
-        <ReactMic
-          visualSetting="frequencyBars"
-          record={recording}
-          onStop={onStop}
-          onData={onData}
-          mimeType="audio/mp3"
-        />
-        {!loading && (
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setRecording(!recording);
-            }}
-          >
-            <MicIcon />
-            {recording ? "Stop recording" : "Start Recording"}
-          </Button>
-        )}
-        <div className="row content">
+        <Header />   
+         <div className="row content">
+        {!loading &&  <Recording setRecording={setRecording} recording={recording}/>} 
+ 
           {!loading && transcript && (
             <Transcript
               transcript={transcript}
@@ -66,11 +50,20 @@ export default function App({ analytics }) {
               getSummary={getSummary}
               setLoading={setLoading}
               actasList={actasList}
-            />
+            />            
           )}
+
           {!loading && summary && <Summary summary={summary} />}
         </div>
+
         <LoadingPage loading={loading} />
+                <ReactMic
+          visualSetting="frequencyBars"
+          record={recording}
+          onStop={onStop}
+          onData={onData}
+          mimeType="audio/mp3"
+        />
       </Stack>
     </>
   );

@@ -12,6 +12,10 @@ import Backdrop from "@mui/material/Backdrop";
 import Skeleton from "@mui/material/Skeleton";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
+import AdbIcon from '@mui/icons-material/Adb';
+import Typography from '@mui/material/Typography';
+import MicIcon from "@mui/icons-material/Mic";
+import Fab from '@mui/material/Fab';
 
 const LoadingPage = ({ loading }) => {
   return (
@@ -56,28 +60,22 @@ const Header = () => {
   return (
     <AppBar position="static">
       <Toolbar disableGutters>
-        <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
-        <Typography
-          variant="h6"
-          noWrap
-          component="a"
-          href="/"
-          sx={{
-            mr: 2,
-            display: { xs: "none", md: "flex" },
-            fontFamily: "monospace",
-            fontWeight: 700,
-            letterSpacing: ".3rem",
-            color: "inherit",
-            textDecoration: "none",
-          }}
-        >
-          LOGO
-        </Typography>
+ 
       </Toolbar>
     </AppBar>
   );
 };
+
+const Recording = ({setRecording, recording}) => {
+  return   <Fab color="primary"    onClick={() => {
+              setRecording(!recording);
+            }}>
+          <MicIcon />
+          </Fab>
+ 
+ 
+}
+
 const Transcript = ({
   transcript,
   setTranscript,
@@ -149,4 +147,4 @@ const Transcript = ({
   );
 };
 
-export { Summary, Transcript, LoadingPage, Header };
+export { Summary, Transcript, LoadingPage, Header, Recording };
