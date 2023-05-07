@@ -1,5 +1,4 @@
 import "./styles.css";
-import "./styles.css";
 
 import { useState, useEffect } from "react";
 import Stack from "@mui/material/Stack";
@@ -8,7 +7,6 @@ import axios from "axios";
 import { ReactMic } from "react-mic";
 import TextField from "@mui/material/TextField";
 import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Box from "@mui/material/Box";
@@ -18,9 +16,10 @@ import MicIcon from "@mui/icons-material/Mic";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import ShareIcon from "@mui/icons-material/Share";
 import Skeleton from "@mui/material/Skeleton";
-import Service from "./Service.js";
 
 import { ButtonGroup } from "@mui/material";
+import { uploadToWhisper, getSummary } from "./API.js";
+import { Summary, Transcript } from "./UI.js";
 
 export default function App() {
   const [recording, setRecording] = useState(false);
@@ -43,43 +42,10 @@ export default function App() {
   }, []);
   const [lookup, setLookup] = useState({});
 
-  async function getSummary(transcript, actas) {
-    const result = await axios.post(
-      `https://4q8slb-3000.csb.app/getSummary`,
-      {
-        transcript,
-        actas,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    setSummary(result.data.summary.content);
-  }
-
-  async function uploadToWhisper(blob) {
-    const url = `https://4q8slb-3000.csb.app/upload`;
-
-    const data = new FormData();
-
-    const file = new File([blob.blob], "speech.mp3", { type: "audio/mp3" });
-
-    data.append("file", file);
-
-    const resp = await axios.post(url, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    setTranscript(resp.data.result);
-  }
-
   const onStop = async (blob) => {
     setSrc(blob.blobURL);
     setLoading(true);
-    await uploadToWhisper(blob);
+    setTranscript(await uploadToWhisper(blob));
     setLoading(false);
   };
 
@@ -93,12 +59,8 @@ export default function App() {
         onStop={onStop}
         onData={onData}
         mimeType="audio/mp3"
-        echoCancellation={false} // defaults -> false
-        autoGainControl={false} // defaults -> false
-        noiseSuppression={false} // defaults -> false
-        channelCount={1}
-        style={{ height: "10px" }}
       />
+
       <Stack className="box">
         {!loading && (
           <Button
@@ -112,8 +74,19 @@ export default function App() {
           </Button>
         )}
         <div className="row content">
-          {!loading && transcript && <>{showTranscript(transcript)}</>}
-          {!loading && summary && <>{showSummary(summary)}</>}
+          {!loading && transcript && (
+            <Transcript
+              transcript={transcript}
+              setTranscript={setTranscript}
+              actas={actas}
+              setActas={setActas}
+              setSummary={setSummary}
+              getSummary={getSummary}
+              setLoading={setLoading}
+              actasList={actasList}
+            />
+          )}
+          {!loading && summary && <Summary summary={summary} />}
         </div>
         <Backdrop
           sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -167,7 +140,6 @@ export default function App() {
           value={transcript}
           className="multiline"
           onChange={(event) => {
-            console.log(event.target.value);
             setTranscript(event.target.value);
           }}
         />
@@ -198,7 +170,7 @@ export default function App() {
             variant="outlined"
             onClick={async () => {
               setLoading(true);
-              await getSummary(transcript, actas);
+              setSummary(await getSummary(transcript, actas));
               setLoading(false);
             }}
           >
@@ -215,30 +187,6 @@ export default function App() {
             Share
           </Button>
         </ButtonGroup>
-      </>
-    );
-  }
-  function showSummary(summary) {
-    return (
-      <>
-        <TextField
-          id="filled-multiline-flexible"
-          label="Summary"
-          multiline
-          variant="filled"
-          value={summary}
-          className="multiline"
-          rows={4}
-        />
-        <Button
-          variant="outlined"
-          onClick={() => {
-            navigator.share({ title: "Happy Share", text: summary });
-          }}
-        >
-          <ShareIcon />
-          Share
-        </Button>
       </>
     );
   }
