@@ -8,6 +8,23 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { ButtonGroup } from "@mui/material";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import MenuItem from "@mui/material/MenuItem";
+import Backdrop from "@mui/material/Backdrop";
+import Skeleton from "@mui/material/Skeleton";
+
+const LoadingPage = ({ loading }) => {
+  return (
+    <Backdrop
+      sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      open={loading}
+    >
+      <Box sx={{ width: 300 }}>
+        <Skeleton />
+        <Skeleton animation="wave" />
+        <Skeleton animation={false} />
+      </Box>
+    </Backdrop>
+  );
+};
 
 const Summary = ({ summary }) => {
   return (
@@ -104,4 +121,4 @@ const Transcript = ({
   );
 };
 
-export { Summary, Transcript };
+export { Summary, Transcript, LoadingPage };
