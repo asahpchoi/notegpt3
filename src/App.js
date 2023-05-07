@@ -6,8 +6,8 @@ import Button from "@mui/material/Button";
 import MicIcon from "@mui/icons-material/Mic";
 
 import { ReactMic } from "react-mic";
-import { uploadToWhisper, getSummary, init } from "./API.js";
-import { Summary, Transcript, LoadingPage } from "./UI.js";
+import { uploadToWhisper, getSummary, init } from "./comps/API.js";
+import { Summary, Transcript, LoadingPage } from "./comps/UI.js";
 
 export default function App() {
   const [recording, setRecording] = useState(false);

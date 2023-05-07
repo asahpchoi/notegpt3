@@ -17,11 +17,6 @@ async function uploadToWhisper(blob) {
   return resp.data.result;
 }
 
-async function getActasList() {
-  const msglist = await axios.get("https://4q8slb-3000.csb.app/getMessageList");
-  return msglist.data;
-}
-
 async function getSummary(transcript, actas) {
   const result = await axios.post(
     `https://4q8slb-3000.csb.app/getSummary`,
