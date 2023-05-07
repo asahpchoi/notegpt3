@@ -18,7 +18,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import Skeleton from "@mui/material/Skeleton";
 
 import { ButtonGroup } from "@mui/material";
-import { uploadToWhisper, getSummary } from "./API.js";
+import { uploadToWhisper, getSummary, init } from "./API.js";
 import { Summary, Transcript } from "./UI.js";
 
 export default function App() {
@@ -32,15 +32,8 @@ export default function App() {
   const [actasList, setActasList] = useState([]);
 
   useEffect(() => {
-    const init = async () => {
-      const msglist = await axios.get(
-        "https://4q8slb-3000.csb.app/getMessageList"
-      );
-      setActasList(msglist.data);
-    };
-    init();
+    init(setActasList);
   }, []);
-  const [lookup, setLookup] = useState({});
 
   const onStop = async (blob) => {
     setSrc(blob.blobURL);
